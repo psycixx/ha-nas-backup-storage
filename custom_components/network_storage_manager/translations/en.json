@@ -3,45 +3,71 @@
     "step": {
       "user": {
         "title": "Add network storage",
-        "description": "Creates a native Home Assistant backup location. For SMB, paste a Windows Explorer path such as \\\\truenas\\backups\\home-assistant; it fills the NAS address and remote share path automatically. SMB needs a remote share path, username, and password; NFS needs an absolute export path. When you submit the form, Home Assistant verifies that the path is reachable and exists.",
+        "description": "First choose a unique internal name and the storage protocol. For SMB/CIFS, you can optionally paste a Windows Explorer path such as \\\\truenas\\backups\\home-assistant. The next step shows only the settings required by the selected protocol.",
         "data": {
           "mount_name": "Name in Home Assistant",
           "protocol": "Protocol",
-          "windows_path": "SMB path copied from Windows Explorer (optional)",
+          "windows_path": "SMB path copied from Windows Explorer (optional)"
+        },
+        "data_description": {
+          "mount_name": "Internal identifier for this location. Only letters, numbers, and underscores are allowed; for example: truenas_backups.",
+          "protocol": "Choose SMB/CIFS for Windows or TrueNAS-style shares, or NFS for an NFS export.",
+          "windows_path": "Optional SMB shortcut. Paste a Windows Explorer path, for example: \\\\truenas\\backups\\home-assistant. It fills the NAS address and remote share path in the next step."
+        }
+      },
+      "smb": {
+        "title": "Connect SMB/CIFS storage",
+        "description": "Enter the access details for the selected SMB destination. When submitting, Home Assistant checks whether the mount can be activated. The destination folder is not created automatically.",
+        "data": {
           "server": "NAS address",
           "share": "SMB remote share path",
-          "path": "NFS export path",
           "username": "SMB username",
           "password": "SMB password",
           "make_default": "Use as default backup location"
         },
         "data_description": {
-          "mount_name": "Internal identifier for this location. Use letters, numbers, hyphens, or underscores; for example: truenas_backups.",
-          "protocol": "Choose SMB/CIFS for Windows or TrueNAS-style shares, or NFS for an NFS export.",
-          "windows_path": "Optional shortcut for SMB. Paste a path copied from Windows Explorer, for example: \\\\truenas\\backups\\home-assistant. It fills the NAS address and remote share path.",
           "server": "Hostname or IP address of the NAS; for example: truenas.local or 192.168.1.20.",
-          "share": "SMB remote share path. Subfolders are supported; for example: backups/home-assistant.",
-          "path": "Absolute path exported by the NFS server; for example: /mnt/tank/backups/home-assistant.",
+          "share": "Remote share path. Subfolders are supported; for example: backups/home-assistant.",
           "username": "Account with write access to the selected SMB location; for example: homeassistant.",
           "password": "Password for the SMB account. It is sent to the Supervisor mount manager and is never exposed by this integration.",
+          "make_default": "Use this location automatically as the default native Home Assistant backup destination."
+        }
+      },
+      "nfs": {
+        "title": "Connect NFS storage",
+        "description": "Enter the NFS server and its exported destination path. When submitting, Home Assistant checks whether the mount can be activated. The destination folder is not created automatically.",
+        "data": {
+          "server": "NAS address",
+          "path": "NFS export path",
+          "make_default": "Use as default backup location"
+        },
+        "data_description": {
+          "server": "Hostname or IP address of the NAS; for example: truenas.local or 192.168.1.20.",
+          "path": "Absolute path exported by the NFS server; for example: /mnt/tank/backups/home-assistant.",
           "make_default": "Use this location automatically as the default native Home Assistant backup destination."
         }
       }
     },
     "error": {
-      "invalid_mount_name": "Use letters, numbers, hyphens, or underscores for the name.",
+      "invalid_mount_name": "Use only letters, numbers, and underscores for the name.",
       "invalid_protocol": "Select SMB/CIFS or NFS.",
       "server_required": "Enter the NAS address.",
-      "share_required": "Enter the SMB share name.",
+      "invalid_server": "Enter a hostname or IP address, not a path.",
+      "share_required": "Enter the SMB remote share path.",
       "username_required": "Enter the SMB username.",
       "password_required": "Enter the SMB password.",
       "invalid_nfs_path": "The NFS export path must start with /.",
+      "invalid_remote_path": "The network path must not contain . or .. path segments.",
       "windows_path_cifs_only": "A Windows Explorer path can only be used with SMB/CIFS.",
       "invalid_windows_path": "Enter a Windows network path starting with \\\\.",
       "windows_path_needs_share": "Use a share path such as \\\\server\\share or \\\\server\\share\\subfolder.",
       "mount_name_exists": "A Supervisor mount already uses this name.",
       "mount_target_exists": "This network location is already configured by another Supervisor mount.",
-      "mount_failed": "The network path could not be reached or does not exist.",
+      "mount_not_active": "The destination could not be mounted. Check that the path exists and that the account has access.",
+      "authentication_failed": "The NAS rejected the supplied username or password.",
+      "permission_denied": "The account does not have sufficient access to this storage location.",
+      "path_not_found": "The selected network path does not exist.",
+      "mount_failed": "The storage location could not be mounted. Check the server, path and access permissions.",
       "cannot_connect": "Home Assistant could not contact the Supervisor or NAS."
     },
     "abort": {
@@ -52,6 +78,18 @@
     "sensor": {
       "backup_storage_status": {
         "name": "Backup storage status"
+      },
+      "storage_protocol": {
+        "name": "Storage protocol"
+      },
+      "storage_server": {
+        "name": "Storage server"
+      },
+      "storage_path": {
+        "name": "Storage share or export"
+      },
+      "default_backup_location": {
+        "name": "Default backup location"
       }
     },
     "button": {
