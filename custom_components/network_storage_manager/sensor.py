@@ -1,4 +1,4 @@
-"""Supervisor mount state sensor."""
+"""Supervisor mount state sensors."""
 from __future__ import annotations
 
 from typing import Any
@@ -18,15 +18,17 @@ from .device import device_info
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Set up the Supervisor mount status sensor."""
+    """Set up the Supervisor mount state and configuration sensors."""
     status = hass.data[DOMAIN][entry.entry_id]["status"]
-    async_add_entities([
-        MountStatusSensor(status, entry),
-        StorageProtocolSensor(status, entry),
-        StorageServerSensor(status, entry),
-        StoragePathSensor(status, entry),
-        StorageDefaultSensor(status, entry),
-    ])
+    async_add_entities(
+        [
+            MountStatusSensor(status, entry),
+            StorageProtocolSensor(status, entry),
+            StorageServerSensor(status, entry),
+            StoragePathSensor(status, entry),
+            StorageDefaultSensor(status, entry),
+        ]
+    )
 
 
 class MountStatusSensor(SensorEntity):
@@ -37,7 +39,6 @@ class MountStatusSensor(SensorEntity):
     _attr_icon = "mdi:nas"
 
     def __init__(self, status, entry) -> None:
-        """Initialize the entity."""
         self._status = status
         self._entry = entry
         self._attr_device_info = device_info(entry)
@@ -46,7 +47,6 @@ class MountStatusSensor(SensorEntity):
 
     @property
     def native_value(self) -> str:
-        """Return the Supervisor mount state."""
         return self._status.state
 
     @property
@@ -60,6 +60,8 @@ class MountStatusSensor(SensorEntity):
             "default_backup_location": data.get(CONF_MAKE_DEFAULT),
             "last_checked": self._status.last_updated,
         }
+        if self._status.last_error:
+            attributes["last_error"] = self._status.last_error
         if data.get(CONF_PROTOCOL) == PROTOCOL_CIFS:
             attributes["share"] = data.get(CONF_SHARE)
         else:
@@ -67,17 +69,14 @@ class MountStatusSensor(SensorEntity):
         return attributes
 
     def _handle_status_update(self) -> None:
-        """Refresh only after Home Assistant has registered this entity."""
         if self.hass is not None:
             self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
-        """Refresh once the entity can safely publish a state."""
         await super().async_added_to_hass()
         await self._status.async_refresh()
 
     async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe from mount status updates."""
         self._unsub()
         await super().async_will_remove_from_hass()
 
@@ -87,11 +86,11 @@ class _StorageSettingSensor(SensorEntity):
 
     _attr_has_entity_name = True
 
-    def __init__(self, status, entry, suffix: str, name: str, icon: str) -> None:
+    def __init__(self, status, entry, suffix: str, translation_key: str, icon: str) -> None:
         self._status = status
         self._entry = entry
         self._attr_unique_id = f"{entry.entry_id}_{suffix}"
-        self._attr_name = name
+        self._attr_translation_key = translation_key
         self._attr_icon = icon
         self._attr_device_info = device_info(entry)
         self._unsub = status.add_listener(self._handle_status_update)
@@ -110,7 +109,7 @@ class _StorageSettingSensor(SensorEntity):
 
 class StorageProtocolSensor(_StorageSettingSensor):
     def __init__(self, status, entry) -> None:
-        super().__init__(status, entry, "protocol", "Storage protocol", "mdi:lan")
+        super().__init__(status, entry, "protocol", "storage_protocol", "mdi:lan")
 
     @property
     def native_value(self):
@@ -119,7 +118,7 @@ class StorageProtocolSensor(_StorageSettingSensor):
 
 class StorageServerSensor(_StorageSettingSensor):
     def __init__(self, status, entry) -> None:
-        super().__init__(status, entry, "server", "Storage server", "mdi:server-network")
+        super().__init__(status, entry, "server", "storage_server", "mdi:server-network")
 
     @property
     def native_value(self):
@@ -128,18 +127,24 @@ class StorageServerSensor(_StorageSettingSensor):
 
 class StoragePathSensor(_StorageSettingSensor):
     def __init__(self, status, entry) -> None:
-        super().__init__(status, entry, "path", "Storage share or export", "mdi:folder-network")
+        super().__init__(status, entry, "path", "storage_path", "mdi:folder-network")
 
     @property
     def native_value(self):
         data = self._data()
-        return data.get(CONF_SHARE) if data.get(CONF_PROTOCOL) == PROTOCOL_CIFS else data.get(CONF_PATH)
+        return (
+            data.get(CONF_SHARE)
+            if data.get(CONF_PROTOCOL) == PROTOCOL_CIFS
+            else data.get(CONF_PATH)
+        )
 
 
 class StorageDefaultSensor(_StorageSettingSensor):
     def __init__(self, status, entry) -> None:
-        super().__init__(status, entry, "is_default", "Default backup location", "mdi:star")
+        super().__init__(
+            status, entry, "is_default", "default_backup_location", "mdi:star"
+        )
 
     @property
     def native_value(self):
-        return "yes" if self._data().get(CONF_MAKE_DEFAULT) else "no"
+        return "enabled" if self._data().get(CONF_MAKE_DEFAULT) else "disabled"
