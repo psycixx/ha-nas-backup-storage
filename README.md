@@ -5,6 +5,12 @@ Create a native Home Assistant backup location from an SMB/CIFS or NFS NAS share
 ## What it does
 The config flow creates a Supervisor mount with usage `backup`. Home Assistant then shows it in **Settings → System → Backups** for native manual and automatic backups. It is NAS-vendor neutral: TrueNAS, Synology, QNAP, and any compatible SMB/NFS server work.
 
+## Install through HACS
+1. Open **HACS → Integrations → ⋮ → Custom repositories**.
+2. Add `https://github.com/psycixx/ha-nas-backup-storage` with category **Integration**.
+3. Find the repository in HACS, select **Download**, and restart Home Assistant.
+4. Add the integration under **Settings → Devices & services**.
+
 ## Requirements
 Home Assistant OS or Supervised is required. Create a dedicated writable backup share and account on the NAS first.
 
