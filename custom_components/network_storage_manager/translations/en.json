@@ -40,6 +40,7 @@
       "invalid_windows_path": "Enter a Windows network path starting with \\\\.",
       "windows_path_needs_share": "Use a share path such as \\\\server\\share or \\\\server\\share\\subfolder.",
       "mount_name_exists": "A Supervisor mount already uses this name.",
+      "mount_target_exists": "This network location is already configured by another Supervisor mount.",
       "mount_failed": "The network path could not be reached or does not exist.",
       "cannot_connect": "Home Assistant could not contact the Supervisor or NAS."
     },
