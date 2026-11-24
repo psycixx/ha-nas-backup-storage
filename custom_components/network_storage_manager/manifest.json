@@ -3,9 +3,9 @@
   "name": "Network Storage Manager",
   "codeowners": [],
   "config_flow": true,
-  "documentation": "https://github.com/psycixx/ha-nas-backup-storage",
+  "documentation": "https://github.com/psycixx/ha-network-storage-manager",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/psycixx/ha-nas-backup-storage/issues",
+  "issue_tracker": "https://github.com/psycixx/ha-network-storage-manager/issues",
   "requirements": [],
   "version": "0.2.0"
 }
