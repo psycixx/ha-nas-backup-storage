@@ -28,4 +28,4 @@ Home Assistant OS or Supervised is required. Create a dedicated writable backup 
 The integration polls mount health every five minutes; use **Reconnect backup storage** to request an immediate Supervisor reload.
 
 ## Safety
-Credentials are handed to the Supervisor mount manager; this integration stores only the mount name. Removing the integration deliberately does not remove the mount or any backups. Test a restore before relying on the location.
+Credentials are handed to the Supervisor mount manager; this integration stores only safe mount metadata. Removing the integration also removes its native Supervisor backup location from Home Assistant. It does not delete backup files from the NAS. Test a restore before relying on the location.
