@@ -5,7 +5,16 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 
-from .const import (\n    CONF_MAKE_DEFAULT,\n    CONF_PATH,\n    CONF_PROTOCOL,\n    CONF_SERVER,\n    CONF_SHARE,\n    DOMAIN,\n    PROTOCOL_CIFS,\n)\nfrom .device import device_info
+from .const import (
+    CONF_MAKE_DEFAULT,
+    CONF_PATH,
+    CONF_PROTOCOL,
+    CONF_SERVER,
+    CONF_SHARE,
+    DOMAIN,
+    PROTOCOL_CIFS,
+)
+from .device import device_info
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
