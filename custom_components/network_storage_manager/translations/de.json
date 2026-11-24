@@ -3,45 +3,71 @@
     "step": {
       "user": {
         "title": "Netzwerkspeicher hinzufügen",
-        "description": "Erstellt einen nativen Home-Assistant-Backup-Speicher. Für SMB kann ein im Windows Explorer kopierter Pfad wie \\\\truenas\\backups\\home-assistant eingefügt werden; NAS-Adresse und Remote-Freigabepfad werden automatisch übernommen. SMB benötigt einen Remote-Freigabepfad, Benutzer und Passwort; NFS einen absoluten Exportpfad. Nach dem Absenden prüft Home Assistant, ob der Pfad erreichbar und vorhanden ist.",
+        "description": "Zuerst einen eindeutigen internen Namen und das Speicherprotokoll wählen. Für SMB/CIFS kann optional ein im Windows Explorer kopierter Pfad wie \\\\truenas\\backups\\home-assistant eingefügt werden. Im nächsten Schritt erscheinen nur die für das gewählte Protokoll nötigen Angaben.",
         "data": {
           "mount_name": "Name in Home Assistant",
           "protocol": "Protokoll",
-          "windows_path": "Aus Windows Explorer kopierter SMB-Pfad (optional)",
+          "windows_path": "Aus Windows Explorer kopierter SMB-Pfad (optional)"
+        },
+        "data_description": {
+          "mount_name": "Interne Kennung für diesen Speicherort. Nur Buchstaben, Zahlen und Unterstriche verwenden; Beispiel: truenas_backups.",
+          "protocol": "SMB/CIFS für Windows- oder TrueNAS-Freigaben wählen, NFS für einen NFS-Export.",
+          "windows_path": "Optionale SMB-Abkürzung. Einen aus Windows Explorer kopierten Pfad einfügen, zum Beispiel: \\\\truenas\\backups\\home-assistant. NAS-Adresse und Remote-Freigabepfad werden im nächsten Schritt übernommen."
+        }
+      },
+      "smb": {
+        "title": "SMB/CIFS-Speicher verbinden",
+        "description": "Zugangsdaten für das gewählte SMB-Ziel eingeben. Beim Absenden prüft Home Assistant, ob der Mount aktiviert werden kann. Der Zielordner wird nicht automatisch angelegt.",
+        "data": {
           "server": "NAS-Adresse",
           "share": "SMB-Remote-Freigabepfad",
-          "path": "NFS-Exportpfad",
           "username": "SMB-Benutzer",
           "password": "SMB-Passwort",
           "make_default": "Als Standard-Backup-Speicher verwenden"
         },
         "data_description": {
-          "mount_name": "Interne Kennung für diesen Speicherort. Buchstaben, Zahlen, Bindestriche und Unterstriche verwenden; Beispiel: truenas_backups.",
-          "protocol": "SMB/CIFS für Windows- oder TrueNAS-Freigaben wählen, NFS für einen NFS-Export.",
-          "windows_path": "Optionale SMB-Abkürzung. Einen aus Windows Explorer kopierten Pfad einfügen, zum Beispiel: \\\\truenas\\backups\\home-assistant. NAS-Adresse und Remote-Freigabepfad werden daraus übernommen.",
           "server": "Hostname oder IP-Adresse des NAS; Beispiel: truenas.local oder 192.168.1.20.",
           "share": "SMB-Remote-Freigabepfad. Unterordner werden unterstützt; Beispiel: backups/home-assistant.",
-          "path": "Vom NFS-Server exportierter absoluter Pfad; Beispiel: /mnt/tank/backups/home-assistant.",
           "username": "Konto mit Schreibzugriff auf den gewählten SMB-Speicherort; Beispiel: homeassistant.",
           "password": "Passwort des SMB-Kontos. Es wird an den Supervisor-Mount-Manager übergeben und von dieser Integration nicht angezeigt.",
+          "make_default": "Diesen Speicherort automatisch als Standardziel für native Home-Assistant-Backups verwenden."
+        }
+      },
+      "nfs": {
+        "title": "NFS-Speicher verbinden",
+        "description": "NFS-Server und exportierten Zielpfad eingeben. Beim Absenden prüft Home Assistant, ob der Mount aktiviert werden kann. Der Zielordner wird nicht automatisch angelegt.",
+        "data": {
+          "server": "NAS-Adresse",
+          "path": "NFS-Exportpfad",
+          "make_default": "Als Standard-Backup-Speicher verwenden"
+        },
+        "data_description": {
+          "server": "Hostname oder IP-Adresse des NAS; Beispiel: truenas.local oder 192.168.1.20.",
+          "path": "Vom NFS-Server exportierter absoluter Pfad; Beispiel: /mnt/tank/backups/home-assistant.",
           "make_default": "Diesen Speicherort automatisch als Standardziel für native Home-Assistant-Backups verwenden."
         }
       }
     },
     "error": {
-      "invalid_mount_name": "Der Name darf nur Buchstaben, Zahlen, Bindestriche und Unterstriche enthalten.",
+      "invalid_mount_name": "Für den Namen nur Buchstaben, Zahlen und Unterstriche verwenden.",
       "invalid_protocol": "SMB/CIFS oder NFS auswählen.",
       "server_required": "NAS-Adresse eingeben.",
-      "share_required": "SMB-Freigabepfad eingeben.",
+      "invalid_server": "Einen Hostnamen oder eine IP-Adresse eingeben, keinen Pfad.",
+      "share_required": "SMB-Remote-Freigabepfad eingeben.",
       "username_required": "SMB-Benutzer eingeben.",
       "password_required": "SMB-Passwort eingeben.",
       "invalid_nfs_path": "Der NFS-Exportpfad muss mit / beginnen.",
+      "invalid_remote_path": "Der Netzwerkpfad darf keine .- oder ..-Pfadsegmente enthalten.",
       "windows_path_cifs_only": "Ein Windows-Explorer-Pfad kann nur mit SMB/CIFS verwendet werden.",
       "invalid_windows_path": "Einen mit \\\\ beginnenden Windows-Netzwerkpfad eingeben.",
       "windows_path_needs_share": "Einen Freigabepfad wie \\\\server\\freigabe oder \\\\server\\freigabe\\unterordner verwenden.",
       "mount_name_exists": "Ein Supervisor-Mount verwendet diesen Namen bereits.",
       "mount_target_exists": "Dieser Netzwerkpfad ist bereits in einem anderen Supervisor-Mount eingerichtet.",
-      "mount_failed": "Der Netzwerkpfad konnte nicht erreicht werden oder ist nicht vorhanden.",
+      "mount_not_active": "Das Ziel konnte nicht eingebunden werden. Prüfen, ob der Pfad vorhanden ist und das Konto Zugriff hat.",
+      "authentication_failed": "Das NAS hat Benutzername oder Passwort abgelehnt.",
+      "permission_denied": "Das Konto hat keine ausreichenden Rechte für diesen Speicherort.",
+      "path_not_found": "Der gewählte Netzwerkpfad ist nicht vorhanden.",
+      "mount_failed": "Der Speicherort konnte nicht eingebunden werden. Server, Pfad und Zugriffsrechte prüfen.",
       "cannot_connect": "Home Assistant konnte Supervisor oder NAS nicht erreichen."
     },
     "abort": {
@@ -52,6 +78,18 @@
     "sensor": {
       "backup_storage_status": {
         "name": "Backup-Speicherstatus"
+      },
+      "storage_protocol": {
+        "name": "Speicherprotokoll"
+      },
+      "storage_server": {
+        "name": "Speicherserver"
+      },
+      "storage_path": {
+        "name": "Freigabe oder Exportpfad"
+      },
+      "default_backup_location": {
+        "name": "Standard-Backup-Speicherort"
       }
     },
     "button": {
