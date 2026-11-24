@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "NAS-Backup-Speicher hinzufügen",
-        "description": "Erstellt einen nativen Supervisor-Backup-Speicher. SMB benötigt Freigabe, Benutzer und Passwort; NFS einen absoluten Exportpfad.",
+        "description": "Erstellt einen nativen Supervisor-Backup-Speicher. Für SMB kann ein im Windows Explorer kopierter Pfad wie \\truenas\\backups eingefügt werden; NAS-Adresse und Freigabe werden automatisch übernommen. SMB benötigt Freigabe, Benutzer und Passwort; NFS einen absoluten Exportpfad.",
         "data": {
           "mount_name": "Name in Home Assistant",
           "protocol": "Protokoll",
+          "windows_path": "Aus Windows Explorer kopierter SMB-Pfad (optional)",
           "server": "NAS-Adresse",
           "share": "SMB-Freigabe",
           "path": "NFS-Exportpfad",
@@ -24,6 +25,9 @@
       "username_required": "SMB-Benutzer eingeben.",
       "password_required": "SMB-Passwort eingeben.",
       "invalid_nfs_path": "Der NFS-Exportpfad muss mit / beginnen.",
+      "windows_path_cifs_only": "Ein Windows-Explorer-Pfad kann nur mit SMB/CIFS verwendet werden.",
+      "invalid_windows_path": "Einen mit \\ beginnenden Windows-Netzwerkpfad eingeben.",
+      "windows_path_needs_share": "Einen Freigabepfad wie \\server\\freigabe verwenden, keinen Unterordner.",
       "mount_name_exists": "Ein Supervisor-Mount verwendet diesen Namen bereits.",
       "mount_failed": "Home Assistant konnte den Mount nicht aktivieren.",
       "cannot_connect": "Home Assistant konnte Supervisor oder NAS nicht erreichen."
