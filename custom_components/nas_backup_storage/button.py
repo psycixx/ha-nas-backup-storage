@@ -4,6 +4,7 @@ from __future__ import annotations
 from homeassistant.components.button import ButtonEntity
 
 from .const import DOMAIN
+from .device import device_info
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -23,6 +24,7 @@ class ReconnectButton(ButtonEntity):
     def __init__(self, status, entry) -> None:
         """Initialize the entity."""
         self._status = status
+        self._attr_device_info = device_info(entry)
         self._attr_unique_id = f"{entry.entry_id}_reconnect"
 
     async def async_press(self) -> None:
