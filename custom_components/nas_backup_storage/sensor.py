@@ -5,7 +5,7 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 
-from .const import DOMAIN
+from .const import (\n    CONF_MAKE_DEFAULT,\n    CONF_PATH,\n    CONF_PROTOCOL,\n    CONF_SERVER,\n    CONF_SHARE,\n    DOMAIN,\n    PROTOCOL_CIFS,\n)\nfrom .device import device_info
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -25,6 +25,8 @@ class MountStatusSensor(SensorEntity):
     def __init__(self, status, entry) -> None:
         """Initialize the entity."""
         self._status = status
+        self._entry = entry
+        self._attr_device_info = device_info(entry)
         self._attr_unique_id = f"{entry.entry_id}_status"
         self._unsub = status.add_listener(self._handle_status_update)
 
@@ -36,10 +38,19 @@ class MountStatusSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return safe status diagnostics without exposing credentials."""
-        return {
+        data = self._entry.data
+        attributes = {
             "mount_name": self._status.name,
+            "protocol": data.get(CONF_PROTOCOL),
+            "server": data.get(CONF_SERVER),
+            "default_backup_location": data.get(CONF_MAKE_DEFAULT),
             "last_checked": self._status.last_updated,
         }
+        if data.get(CONF_PROTOCOL) == PROTOCOL_CIFS:
+            attributes["share"] = data.get(CONF_SHARE)
+        else:
+            attributes["nfs_export_path"] = data.get(CONF_PATH)
+        return attributes
 
     def _handle_status_update(self) -> None:
         """Refresh only after Home Assistant has registered this entity."""
