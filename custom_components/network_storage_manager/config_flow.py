@@ -18,7 +18,7 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.hassio import is_hassio
 
 from .const import *
-from .models import validate_mount_input
+from .models import mount_target_exists, validate_mount_input
 
 
 def _schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
@@ -65,6 +65,8 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             mounts = await client.mounts.info()
             if any(mount.name == data[CONF_MOUNT_NAME] for mount in mounts.mounts):
                 raise ValueError("mount_name_exists")
+            if mount_target_exists(mounts.mounts, data):
+                raise ValueError("mount_target_exists")
             if data[CONF_PROTOCOL] == PROTOCOL_CIFS:
                 request = CIFSMountRequest(
                     usage=MountUsage.BACKUP,
