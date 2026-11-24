@@ -1,4 +1,4 @@
-""""Tests which do not require Home Assistant."""
+"""Tests which do not require Home Assistant."""
 import importlib.util
 import sys
 import types
@@ -18,6 +18,7 @@ for name in ("const", "models"):
 from network_storage_manager.const import *
 from network_storage_manager.models import validate_mount_input
 
+
 class MountInputTests(unittest.TestCase):
     def test_cifs_input(self):
         result = validate_mount_input({CONF_MOUNT_NAME: "truenas_backups", CONF_PROTOCOL: PROTOCOL_CIFS, CONF_SERVER: "nas.local", CONF_SHARE: "/backups/", CONF_USERNAME: "ha", CONF_PASSWORD: "secret"})
@@ -28,9 +29,10 @@ class MountInputTests(unittest.TestCase):
         self.assertEqual(result[CONF_SERVER], "truenas")
         self.assertEqual(result[CONF_SHARE], "backups")
 
-    def test_windows_unc_path_rejects_subfolder(self):
-        with self.assertRaises(ValueError):
-            validate_mount_input({CONF_MOUNT_NAME: "nas", CONF_PROTOCOL: PROTOCOL_CIFS, CONF_WINDOWS_PATH: r"\\truenas\backups\subfolder", CONF_USERNAME: "ha", CONF_PASSWORD: "secret"})
+    def test_windows_unc_path_allows_subfolder(self):
+        result = validate_mount_input({CONF_MOUNT_NAME: "nas", CONF_PROTOCOL: PROTOCOL_CIFS, CONF_WINDOWS_PATH: r"\\truenas\backups\home-assistant", CONF_USERNAME: "ha", CONF_PASSWORD: "secret"})
+        self.assertEqual(result[CONF_SERVER], "truenas")
+        self.assertEqual(result[CONF_SHARE], "backups/home-assistant")
 
     def test_nfs_needs_absolute_path(self):
         with self.assertRaises(ValueError):
