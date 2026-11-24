@@ -13,6 +13,7 @@ from aiohasupervisor.models.mounts import (
 from homeassistant import config_entries
 from homeassistant.components.hassio.handler import get_supervisor_client
 from homeassistant.helpers import selector
+from homeassistant.helpers.hassio import is_hassio
 from .const import *
 from .models import validate_mount_input
 
@@ -39,9 +40,12 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
+        if not is_hassio(self.hass):
+            return self.async_abort(reason="supervisor_required")
         if user_input is None:
             return self.async_show_form(step_id="user", data_schema=_schema())
 
+        created_mount = False
         try:
             data = validate_mount_input(user_input)
             await self.async_set_unique_id(data[CONF_MOUNT_NAME])
@@ -65,6 +69,7 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     path=PurePath(data[CONF_PATH]),
                 )
             await client.mounts.create_mount(data[CONF_MOUNT_NAME], request)
+            created_mount = True
             mounts = await client.mounts.info()
             mount = next(
                 mount for mount in mounts.mounts if mount.name == data[CONF_MOUNT_NAME]
@@ -81,6 +86,11 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id="user", data_schema=_schema(user_input), errors={"base": str(err)}
             )
         except Exception:
+            if created_mount:
+                try:
+                    await get_supervisor_client(self.hass).mounts.delete_mount(data[CONF_MOUNT_NAME])
+                except Exception:
+                    pass
             return self.async_show_form(
                 step_id="user", data_schema=_schema(user_input), errors={"base": "cannot_connect"}
             )
