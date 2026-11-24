@@ -16,9 +16,11 @@ def _apply_windows_path(result: dict[str, Any]) -> None:
     if not windows_path.startswith(("\\\\", "//")):
         raise ValueError("invalid_windows_path")
     parts = [part for part in windows_path.replace("\\", "/").split("/") if part]
-    if len(parts) != 2:
+    if len(parts) < 2:
         raise ValueError("windows_path_needs_share")
-    result[CONF_SERVER], result[CONF_SHARE] = parts
+    result[CONF_SERVER] = parts[0]
+    # The Supervisor accepts a remote SMB share path, including a subfolder.
+    result[CONF_SHARE] = "/".join(parts[1:])
     result[CONF_WINDOWS_PATH] = windows_path
 
 def validate_mount_input(data: dict[str, Any]) -> dict[str, Any]:
