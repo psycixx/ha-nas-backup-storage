@@ -1,4 +1,4 @@
-"""Guided creation of Supervisor backup mounts."""
+""""Guided creation of Supervisor backup mounts."""
 from __future__ import annotations
 from pathlib import PurePath
 from typing import Any
@@ -24,6 +24,9 @@ def _schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
         vol.Required(CONF_MOUNT_NAME, default=d(CONF_MOUNT_NAME, "nas_backup")): selector.TextSelector(),
         vol.Required(CONF_PROTOCOL, default=d(CONF_PROTOCOL, PROTOCOL_CIFS)): selector.SelectSelector(
             selector.SelectSelectorConfig(options=[PROTOCOL_CIFS, PROTOCOL_NFS])
+        ),
+        vol.Optional(CONF_WINDOWS_PATH, default=d(CONF_WINDOWS_PATH, "")): selector.TextSelector(
+            selector.TextSelectorConfig(autocomplete="off")
         ),
         vol.Required(CONF_SERVER, default=d(CONF_SERVER, "")): selector.TextSelector(),
         vol.Optional(CONF_SHARE, default=d(CONF_SHARE, "")): selector.TextSelector(),
