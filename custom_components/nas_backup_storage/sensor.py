@@ -19,9 +19,14 @@ from .device import device_info
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the Supervisor mount status sensor."""
-    async_add_entities(
-        [MountStatusSensor(hass.data[DOMAIN][entry.entry_id]["status"], entry)]
-    )
+    status = hass.data[DOMAIN][entry.entry_id]["status"]
+    async_add_entities([
+        MountStatusSensor(status, entry),
+        StorageProtocolSensor(status, entry),
+        StorageServerSensor(status, entry),
+        StoragePathSensor(status, entry),
+        StorageDefaultSensor(status, entry),
+    ])
 
 
 class MountStatusSensor(SensorEntity):
@@ -75,3 +80,66 @@ class MountStatusSensor(SensorEntity):
         """Unsubscribe from mount status updates."""
         self._unsub()
         await super().async_will_remove_from_hass()
+
+
+class _StorageSettingSensor(SensorEntity):
+    """Base entity for a visible, non-secret network storage setting."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, status, entry, suffix: str, name: str, icon: str) -> None:
+        self._status = status
+        self._entry = entry
+        self._attr_unique_id = f"{entry.entry_id}_{suffix}"
+        self._attr_name = name
+        self._attr_icon = icon
+        self._attr_device_info = device_info(entry)
+        self._unsub = status.add_listener(self._handle_status_update)
+
+    def _data(self):
+        return self._entry.data
+
+    def _handle_status_update(self) -> None:
+        if self.hass is not None:
+            self.async_write_ha_state()
+
+    async def async_will_remove_from_hass(self) -> None:
+        self._unsub()
+        await super().async_will_remove_from_hass()
+
+
+class StorageProtocolSensor(_StorageSettingSensor):
+    def __init__(self, status, entry) -> None:
+        super().__init__(status, entry, "protocol", "Storage protocol", "mdi:lan")
+
+    @property
+    def native_value(self):
+        return self._data().get(CONF_PROTOCOL)
+
+
+class StorageServerSensor(_StorageSettingSensor):
+    def __init__(self, status, entry) -> None:
+        super().__init__(status, entry, "server", "Storage server", "mdi:server-network")
+
+    @property
+    def native_value(self):
+        return self._data().get(CONF_SERVER)
+
+
+class StoragePathSensor(_StorageSettingSensor):
+    def __init__(self, status, entry) -> None:
+        super().__init__(status, entry, "path", "Storage share or export", "mdi:folder-network")
+
+    @property
+    def native_value(self):
+        data = self._data()
+        return data.get(CONF_SHARE) if data.get(CONF_PROTOCOL) == PROTOCOL_CIFS else data.get(CONF_PATH)
+
+
+class StorageDefaultSensor(_StorageSettingSensor):
+    def __init__(self, status, entry) -> None:
+        super().__init__(status, entry, "is_default", "Default backup location", "mdi:star")
+
+    @property
+    def native_value(self):
+        return "yes" if self._data().get(CONF_MAKE_DEFAULT) else "no"
