@@ -7,14 +7,16 @@ Create a native Home Assistant backup location from an SMB/CIFS or NFS NAS share
 
 ## What it does
 
-The config flow creates a Supervisor mount with usage `backup`. Home Assistant then shows it in **Settings → System → Backups** for native manual and automatic backups. It is NAS-vendor neutral: TrueNAS, Synology, QNAP, and any compatible SMB/NFS server work.
+The guided configuration creates a Supervisor mount with usage \`backup\`. Home Assistant then shows it in **Settings → System → Backups** for native manual and automatic backups. It is NAS-vendor neutral: TrueNAS, Synology, QNAP, and any compatible SMB/NFS server work.
 
-When the form is submitted, the Supervisor tries to activate the mount. This verifies that the target exists and can be reached with the supplied access details. If it cannot be activated, no storage configuration is created.
+The first form selects the protocol. The next form only displays fields relevant to SMB/CIFS or NFS. Its language follows the Home Assistant user interface: German for German users and English as the fallback.
+
+When the form is submitted, the Supervisor tries to activate the mount. This checks that the selected target can be reached and mounted, but it does not create a remote folder. The configuration flow also prevents the same remote SMB/NFS target from being added through another Supervisor mount.
 
 ## Install through HACS
 
 1. Open **HACS → Integrations → ⋮ → Custom repositories**.
-2. Add `https://github.com/psycixx/ha-network-storage-manager` with category **Integration**.
+2. Add \`https://github.com/psycixx/ha-network-storage-manager\` with category **Integration**.
 3. Find the repository in HACS and select **Download**.
 4. **Restart Home Assistant.**
 5. Add the integration under **Settings → Devices & services**.
@@ -25,15 +27,14 @@ Home Assistant OS or Supervised is required. Create a dedicated writable backup 
 
 ## Setup
 
-1. Install `custom_components/network_storage_manager` and restart Home Assistant.
-2. Add **Network Storage Manager** under Devices & services.
-3. Enter an internal mount name and select SMB/CIFS or NFS.
-4. For SMB, either paste a Windows UNC path such as `\\truenas\backups\home-assistant` or enter the NAS address and remote share path manually. Subfolders are supported: use `backups/home-assistant` as the remote share path.
-5. For NFS, enter the NAS address and an absolute exported path such as `/mnt/tank/backups/home-assistant`.
-6. Enter SMB credentials when using SMB, then optionally set the location as the default backup target.
-7. Confirm the status sensor is `active`, then select the location on the native Backup page.
+1. Add **Network Storage Manager** under Devices & services.
+2. Choose a mount name containing only letters, digits and underscores, then choose SMB/CIFS or NFS.
+3. For SMB, optionally paste a Windows UNC path such as \`\\truenas\backups\home-assistant\`. Otherwise enter the NAS address and remote share path manually. Subfolders are supported: use \`backups/home-assistant\`.
+4. For NFS, enter the NAS address and an absolute exported path such as \`/mnt/tank/backups/home-assistant\`.
+5. Enter SMB credentials when using SMB, then optionally set the location as the default backup target.
+6. Confirm the status sensor is \`active\`, then select the location on the native Backup page.
 
-The integration polls mount health every five minutes; use **Reconnect backup storage** to request an immediate Supervisor reload.
+The integration polls mount health every five minutes. **Reconnect backup storage** requests an immediate Supervisor reload; if it fails, the status sensor displays \`unavailable\` and includes a safe diagnostic message.
 
 ## Safety
 
