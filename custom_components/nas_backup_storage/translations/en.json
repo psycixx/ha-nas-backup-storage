@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "Add NAS backup storage",
-        "description": "Creates a native Supervisor backup location. SMB needs a share, username, and password; NFS needs an absolute export path.",
+        "description": "Creates a native Supervisor backup location. For SMB, you can paste a Windows Explorer path such as \\truenas\\backups; it fills the NAS address and share automatically. SMB needs a share, username, and password; NFS needs an absolute export path.",
         "data": {
           "mount_name": "Name in Home Assistant",
           "protocol": "Protocol",
+          "windows_path": "SMB path copied from Windows Explorer (optional)",
           "server": "NAS address",
           "share": "SMB share",
           "path": "NFS export path",
@@ -24,6 +25,9 @@
       "username_required": "Enter the SMB username.",
       "password_required": "Enter the SMB password.",
       "invalid_nfs_path": "The NFS export path must start with /.",
+      "windows_path_cifs_only": "A Windows Explorer path can only be used with SMB/CIFS.",
+      "invalid_windows_path": "Enter a Windows network path starting with \\.",
+      "windows_path_needs_share": "Use a share path such as \\server\\share, not a subfolder.",
       "mount_name_exists": "A Supervisor mount already uses this name.",
       "mount_failed": "Home Assistant could not activate the mount.",
       "cannot_connect": "Home Assistant could not contact the Supervisor or NAS."
