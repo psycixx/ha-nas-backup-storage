@@ -1,10 +1,13 @@
-""""Pure validation for NAS backup storage setup."""
+"""Pure validation for NAS backup storage setup."""
 from __future__ import annotations
+
 import re
-from typing import Any
+from typing import Any, Iterable
+
 from .const import *
 
 _MOUNT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
+
 
 def _apply_windows_path(result: dict[str, Any]) -> None:
     """Extract SMB server and share from a copied Windows UNC path."""
@@ -13,15 +16,44 @@ def _apply_windows_path(result: dict[str, Any]) -> None:
         return
     if result.get(CONF_PROTOCOL) != PROTOCOL_CIFS:
         raise ValueError("windows_path_cifs_only")
-    if not windows_path.startswith(("\\\\", "//")):
+    if not windows_path.startswith(("\\", "//")):
         raise ValueError("invalid_windows_path")
     parts = [part for part in windows_path.replace("\\", "/").split("/") if part]
     if len(parts) < 2:
         raise ValueError("windows_path_needs_share")
     result[CONF_SERVER] = parts[0]
-    # The Supervisor accepts a remote SMB share path, including a subfolder.
     result[CONF_SHARE] = "/".join(parts[1:])
     result[CONF_WINDOWS_PATH] = windows_path
+
+
+def _mount_value(mount: Any, key: str) -> str:
+    """Return a normalized Supervisor mount attribute."""
+    value = mount.get(key) if isinstance(mount, dict) else getattr(mount, key, None)
+    value = getattr(value, "value", value)
+    return "" if value is None else str(value).strip()
+
+
+def mount_target_exists(mounts: Iterable[Any], data: dict[str, Any]) -> bool:
+    """Return whether a Supervisor mount already has this same remote target."""
+    protocol = data[CONF_PROTOCOL]
+    server = str(data[CONF_SERVER]).casefold()
+    target_key = CONF_SHARE if protocol == PROTOCOL_CIFS else CONF_PATH
+    target = str(data[target_key]).strip().strip("/")
+    if protocol == PROTOCOL_CIFS:
+        target = target.casefold()
+
+    for mount in mounts:
+        if _mount_value(mount, "type").casefold() != protocol:
+            continue
+        if _mount_value(mount, "server").casefold() != server:
+            continue
+        existing = _mount_value(mount, target_key).strip().strip("/")
+        if protocol == PROTOCOL_CIFS:
+            existing = existing.casefold()
+        if existing == target:
+            return True
+    return False
+
 
 def validate_mount_input(data: dict[str, Any]) -> dict[str, Any]:
     """Normalize and validate input before the Supervisor mount call."""
