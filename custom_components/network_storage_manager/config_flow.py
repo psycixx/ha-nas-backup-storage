@@ -99,6 +99,7 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         """Initialize the in-progress configuration data."""
+        super().__init__()
         self._identity_data: dict[str, Any] = {}
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
