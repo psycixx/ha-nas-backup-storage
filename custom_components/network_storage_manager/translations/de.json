@@ -40,6 +40,7 @@
       "invalid_windows_path": "Einen mit \\\\ beginnenden Windows-Netzwerkpfad eingeben.",
       "windows_path_needs_share": "Einen Freigabepfad wie \\\\server\\freigabe oder \\\\server\\freigabe\\unterordner verwenden.",
       "mount_name_exists": "Ein Supervisor-Mount verwendet diesen Namen bereits.",
+      "mount_target_exists": "Dieser Netzwerkpfad ist bereits in einem anderen Supervisor-Mount eingerichtet.",
       "mount_failed": "Der Netzwerkpfad konnte nicht erreicht werden oder ist nicht vorhanden.",
       "cannot_connect": "Home Assistant konnte Supervisor oder NAS nicht erreichen."
     },
