@@ -1,7 +1,9 @@
-""""Guided creation of Supervisor backup mounts."""
+"""Guided creation of Supervisor backup mounts."""
 from __future__ import annotations
+
 from pathlib import PurePath
 from typing import Any
+
 import voluptuous as vol
 from aiohasupervisor.models.mounts import (
     CIFSMountRequest,
@@ -14,8 +16,10 @@ from homeassistant import config_entries
 from homeassistant.components.hassio.handler import get_supervisor_client
 from homeassistant.helpers import selector
 from homeassistant.helpers.hassio import is_hassio
+
 from .const import *
 from .models import validate_mount_input
+
 
 def _schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
     defaults = defaults or {}
@@ -28,7 +32,9 @@ def _schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
         vol.Optional(CONF_WINDOWS_PATH, default=d(CONF_WINDOWS_PATH, "")): selector.TextSelector(
             selector.TextSelectorConfig(autocomplete="off")
         ),
-        vol.Required(CONF_SERVER, default=d(CONF_SERVER, "")): selector.TextSelector(),
+        # An SMB UNC path supplies this value. Validation keeps the address
+        # mandatory when no UNC path is provided, including for NFS.
+        vol.Optional(CONF_SERVER, default=d(CONF_SERVER, "")): selector.TextSelector(),
         vol.Optional(CONF_SHARE, default=d(CONF_SHARE, "")): selector.TextSelector(),
         vol.Optional(CONF_PATH, default=d(CONF_PATH, "")): selector.TextSelector(),
         vol.Optional(CONF_USERNAME, default=d(CONF_USERNAME, "")): selector.TextSelector(),
@@ -38,8 +44,10 @@ def _schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
         vol.Required(CONF_MAKE_DEFAULT, default=d(CONF_MAKE_DEFAULT, False)): selector.BooleanSelector(),
     })
 
+
 class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Configure one Supervisor-managed network backup location."""
+
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
@@ -91,7 +99,9 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except Exception:
             if created_mount:
                 try:
-                    await get_supervisor_client(self.hass).mounts.delete_mount(data[CONF_MOUNT_NAME])
+                    await get_supervisor_client(self.hass).mounts.delete_mount(
+                        data[CONF_MOUNT_NAME]
+                    )
                 except Exception:
                     pass
             return self.async_show_form(
