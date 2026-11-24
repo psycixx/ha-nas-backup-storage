@@ -1,28 +1,21 @@
 # NAS Backup Storage
 
-Eine Home-Assistant-Custom-Integration, die NAS-Freigaben als native Backup-Speicherorte einrichtet.
+Create a native Home Assistant backup location from an SMB/CIFS or NFS NAS share.
 
-## Ziel
+## What it does
+The config flow creates a Supervisor mount with usage `backup`. Home Assistant then shows it in **Settings → System → Backups** for native manual and automatic backups. It is NAS-vendor neutral: TrueNAS, Synology, QNAP, and any compatible SMB/NFS server work.
 
-Der Assistent fragt nur die Angaben ab, die für eine SMB/CIFS- oder NFS-Freigabe nötig sind. Danach erstellt er einen Supervisor-Mount mit der Nutzung **Backup**. Home Assistant zeigt ihn anschließend in **Einstellungen → System → Backups** als normalen Speicherort an.
+## Requirements
+Home Assistant OS or Supervised is required. Create a dedicated writable backup share and account on the NAS first.
 
-Die Integration funktioniert mit TrueNAS, Synology, QNAP und jedem NAS mit SMB/CIFS oder NFS. Eine vorhandene Herstellerintegration ist nicht erforderlich.
+## Setup
+1. Install `custom_components/nas_backup_storage` and restart Home Assistant.
+2. Add **NAS Backup Storage** under Devices & services.
+3. Enter an internal mount name, protocol, NAS address, and either SMB share plus credentials or an absolute NFS export path.
+4. Optionally make it the default backup location.
+5. Confirm the status sensor is `active`, then select the location on the native Backup page.
 
-## Installation
+The integration polls mount health every five minutes; use **Reconnect backup storage** to request an immediate Supervisor reload.
 
-1. Den Ordner `custom_components/nas_backup_storage` nach `<config>/custom_components/` kopieren.
-2. Home Assistant neu starten.
-3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → NAS Backup Storage**.
-4. Pro Freigabe Protokoll, NAS-Adresse, Freigabe bzw. NFS-Pfad und bei SMB Zugangsdaten eingeben.
-5. Danach den Speicherort unter **Einstellungen → System → Backups** für manuelle oder automatische Backups auswählen.
-
-## Sicherheit und Grenzen
-
-- Die Freigabe-Zugangsdaten werden ausschließlich beim Supervisor-Mount hinterlegt. Der Config-Entry dieser Integration speichert nur den Namen des Mounts.
-- Das Entfernen der Integration löscht den Supervisor-Mount nicht. So bleiben bereits vorhandene Backups erreichbar und der Speicher kann weiterhin von Home Assistant verwendet werden.
-- Unterstützt werden Home Assistant OS und Supervised mit verfügbarem Supervisor; Home Assistant Container und Core haben keinen Supervisor-Mount-Manager.
-- Der MVP erstellt keinen Benutzer und keine Freigabe auf dem NAS. Dafür werden absichtlich keine weitreichenden NAS-API-Rechte verlangt.
-
-## Testen
-
-Vor der produktiven Nutzung: einen manuellen verschlüsselten Backup-Lauf auf dem neuen Speicher ausführen, ihn in der Backup-Übersicht sehen und einen Wiederherstellungstest auf einer separaten HA-Instanz durchführen.
+## Safety
+Credentials are handed to the Supervisor mount manager; this integration stores only the mount name. Removing the integration deliberately does not remove the mount or any backups. Test a restore before relying on the location.
