@@ -108,7 +108,18 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id="user", data_schema=_schema(user_input), errors={"base": "cannot_connect"}
             )
 
+        entry_data = {
+            CONF_MOUNT_NAME: data[CONF_MOUNT_NAME],
+            CONF_PROTOCOL: data[CONF_PROTOCOL],
+            CONF_SERVER: data[CONF_SERVER],
+            CONF_MAKE_DEFAULT: data[CONF_MAKE_DEFAULT],
+        }
+        if data[CONF_PROTOCOL] == PROTOCOL_CIFS:
+            entry_data[CONF_SHARE] = data[CONF_SHARE]
+        else:
+            entry_data[CONF_PATH] = data[CONF_PATH]
+
         return self.async_create_entry(
             title=f"NAS Backup: {data[CONF_MOUNT_NAME]}",
-            data={CONF_MOUNT_NAME: data[CONF_MOUNT_NAME]},
+            data=entry_data,
         )
