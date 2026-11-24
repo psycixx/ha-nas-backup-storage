@@ -33,7 +33,7 @@
       "cannot_connect": "Home Assistant could not contact the Supervisor or NAS."
     },
     "abort": {
-      "supervisor_required": "NAS Backup Storage requires Home Assistant OS or a supervised installation."
+      "supervisor_required": "Network Storage Manager requires Home Assistant OS or a supervised installation."
     }
   },
   "entity": {

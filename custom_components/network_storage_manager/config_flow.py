@@ -120,6 +120,6 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             entry_data[CONF_PATH] = data[CONF_PATH]
 
         return self.async_create_entry(
-            title=f"NAS Backup: {data[CONF_MOUNT_NAME]}",
+            title=f"Network Storage: {data[CONF_MOUNT_NAME]}",
             data=entry_data,
         )

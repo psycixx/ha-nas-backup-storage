@@ -12,7 +12,7 @@ def device_info(entry) -> DeviceInfo:
     return DeviceInfo(
         identifiers={(DOMAIN, entry.entry_id)},
         name=entry.title,
-        manufacturer="NAS Backup Storage",
+        manufacturer="Network Storage Manager",
         model=f"{protocol} backup location",
         configuration_url="https://github.com/psycixx/ha-nas-backup-storage",
     )

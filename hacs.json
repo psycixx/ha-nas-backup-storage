@@ -1,5 +1,5 @@
 {
-  "name": "NAS Backup Storage",
+  "name": "Network Storage Manager",
   "render_readme": true,
   "homeassistant": "2026.10.0"
 }

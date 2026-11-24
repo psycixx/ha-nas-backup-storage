@@ -1,4 +1,4 @@
-"""NAS Backup Storage integration."""
+"""Network Storage Manager integration."""
 from __future__ import annotations
 
 import logging
@@ -42,7 +42,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         # Supervisor may already have removed the mount manually.
         _LOGGER.warning(
             "Could not remove Supervisor backup mount %s while removing the "
-            "NAS Backup Storage entry",
+            "Network Storage Manager entry",
             mount_name,
             exc_info=True,
         )

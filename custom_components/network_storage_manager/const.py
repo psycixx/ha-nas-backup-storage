@@ -1,7 +1,7 @@
-""""Constants for NAS Backup Storage."""
+""""Constants for Network Storage Manager."""
 from typing import Final
 
-DOMAIN: Final = "nas_backup_storage"
+DOMAIN: Final = "network_storage_manager"
 
 CONF_MOUNT_NAME: Final = "mount_name"
 CONF_PROTOCOL: Final = "protocol"

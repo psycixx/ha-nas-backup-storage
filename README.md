@@ -1,4 +1,4 @@
-# NAS Backup Storage
+# Network Storage Manager
 
 Create a native Home Assistant backup location from an SMB/CIFS or NFS NAS share.
 
@@ -19,8 +19,8 @@ The config flow creates a Supervisor mount with usage `backup`. Home Assistant t
 Home Assistant OS or Supervised is required. Create a dedicated writable backup share and account on the NAS first.
 
 ## Setup
-1. Install `custom_components/nas_backup_storage` and restart Home Assistant.
-2. Add **NAS Backup Storage** under Devices & services.
+1. Install `custom_components/network_storage_manager` and restart Home Assistant.
+2. Add **Network Storage Manager** under Devices & services.
 3. Enter an internal mount name, protocol, NAS address, and either SMB share plus credentials or an absolute NFS export path.
 4. Optionally make it the default backup location.
 5. Confirm the status sensor is `active`, then select the location on the native Backup page.

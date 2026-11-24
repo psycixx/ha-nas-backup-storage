@@ -5,18 +5,18 @@ import types
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).parents[1] / "custom_components" / "nas_backup_storage"
-package = types.ModuleType("nas_backup_storage")
+ROOT = Path(__file__).parents[1] / "custom_components" / "network_storage_manager"
+package = types.ModuleType("network_storage_manager")
 package.__path__ = [str(ROOT)]
-sys.modules["nas_backup_storage"] = package
+sys.modules["network_storage_manager"] = package
 for name in ("const", "models"):
-    spec = importlib.util.spec_from_file_location(f"nas_backup_storage.{name}", ROOT / f"{name}.py")
+    spec = importlib.util.spec_from_file_location(f"network_storage_manager.{name}", ROOT / f"{name}.py")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
 
-from nas_backup_storage.const import *
-from nas_backup_storage.models import validate_mount_input
+from network_storage_manager.const import *
+from network_storage_manager.models import validate_mount_input
 
 class MountInputTests(unittest.TestCase):
     def test_cifs_input(self):
