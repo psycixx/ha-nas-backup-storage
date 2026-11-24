@@ -35,5 +35,17 @@
     "abort": {
       "supervisor_required": "NAS Backup Storage requires Home Assistant OS or a supervised installation."
     }
+  },
+  "entity": {
+    "sensor": {
+      "backup_storage_status": {
+        "name": "Backup storage status"
+      }
+    },
+    "button": {
+      "reconnect_backup_storage": {
+        "name": "Reconnect backup storage"
+      }
+    }
   }
 }
