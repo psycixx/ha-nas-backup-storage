@@ -18,6 +18,11 @@ def validate_mount_identity(data: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("invalid_mount_name")
     result[CONF_MOUNT_NAME] = name
 
+    usage = result.get(CONF_USAGE, USAGE_BACKUP)
+    if usage not in STORAGE_USAGES:
+        raise ValueError("invalid_usage")
+    result[CONF_USAGE] = usage
+
     protocol = result.get(CONF_PROTOCOL)
     if protocol not in (PROTOCOL_CIFS, PROTOCOL_NFS):
         raise ValueError("invalid_protocol")
@@ -84,6 +89,10 @@ def mount_target_exists(mounts: Iterable[Any], data: dict[str, Any]) -> bool:
 def validate_mount_input(data: dict[str, Any]) -> dict[str, Any]:
     """Normalize and validate input before the Supervisor mount call."""
     result = prepare_mount_input(data)
+    result[CONF_MAKE_DEFAULT] = (
+        bool(result.get(CONF_MAKE_DEFAULT, False))
+        if result[CONF_USAGE] == USAGE_BACKUP else False
+    )
     server = str(result.get(CONF_SERVER, "")).strip()
     if not server:
         raise ValueError("server_required")

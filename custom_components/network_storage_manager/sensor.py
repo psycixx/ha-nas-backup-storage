@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 
 from .const import (
     CONF_MAKE_DEFAULT,
@@ -11,8 +11,11 @@ from .const import (
     CONF_PROTOCOL,
     CONF_SERVER,
     CONF_SHARE,
+    CONF_USAGE,
     DOMAIN,
     PROTOCOL_CIFS,
+    STORAGE_USAGES,
+    USAGE_BACKUP,
 )
 from .device import device_info
 
@@ -20,19 +23,20 @@ from .device import device_info
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the Supervisor mount state and configuration sensors."""
     status = hass.data[DOMAIN][entry.entry_id]["status"]
-    async_add_entities(
-        [
-            MountStatusSensor(status, entry),
-            StorageProtocolSensor(status, entry),
-            StorageServerSensor(status, entry),
-            StoragePathSensor(status, entry),
-            StorageDefaultSensor(status, entry),
-        ]
-    )
+    entities = [
+        MountStatusSensor(status, entry),
+        StorageUsageSensor(status, entry),
+        StorageProtocolSensor(status, entry),
+        StorageServerSensor(status, entry),
+        StoragePathSensor(status, entry),
+    ]
+    if entry.data.get(CONF_USAGE, USAGE_BACKUP) == USAGE_BACKUP:
+        entities.append(StorageDefaultSensor(status, entry))
+    async_add_entities(entities)
 
 
 class MountStatusSensor(SensorEntity):
-    """Expose the selected native backup storage's mount state."""
+    """Expose the selected native storage's mount state."""
 
     _attr_has_entity_name = True
     _attr_translation_key = "backup_storage_status"
@@ -57,11 +61,13 @@ class MountStatusSensor(SensorEntity):
             "mount_name": self._status.name,
             "protocol": data.get(CONF_PROTOCOL),
             "server": data.get(CONF_SERVER),
-            "default_backup_location": data.get(CONF_MAKE_DEFAULT),
+            "usage": data.get(CONF_USAGE, USAGE_BACKUP),
             "last_checked": self._status.last_updated,
         }
         if self._status.last_error:
             attributes["last_error"] = self._status.last_error
+        if data.get(CONF_USAGE, USAGE_BACKUP) == USAGE_BACKUP:
+            attributes["default_backup_location"] = data.get(CONF_MAKE_DEFAULT, False)
         if data.get(CONF_PROTOCOL) == PROTOCOL_CIFS:
             attributes["share"] = data.get(CONF_SHARE)
         else:
@@ -105,6 +111,20 @@ class _StorageSettingSensor(SensorEntity):
     async def async_will_remove_from_hass(self) -> None:
         self._unsub()
         await super().async_will_remove_from_hass()
+
+
+class StorageUsageSensor(_StorageSettingSensor):
+    """Expose the selected network storage purpose."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = STORAGE_USAGES
+
+    def __init__(self, status, entry) -> None:
+        super().__init__(status, entry, "usage", "storage_usage", "mdi:folder-cog")
+
+    @property
+    def native_value(self):
+        return self._data().get(CONF_USAGE, USAGE_BACKUP)
 
 
 class StorageProtocolSensor(_StorageSettingSensor):

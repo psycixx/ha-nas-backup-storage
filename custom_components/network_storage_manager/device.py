@@ -13,6 +13,6 @@ def device_info(entry) -> DeviceInfo:
         identifiers={(DOMAIN, entry.entry_id)},
         name=entry.title,
         manufacturer="Network Storage Manager",
-        model=f"{protocol} backup location",
+        model=f"{protocol} network storage",
         configuration_url="https://github.com/psycixx/ha-network-storage-manager",
     )

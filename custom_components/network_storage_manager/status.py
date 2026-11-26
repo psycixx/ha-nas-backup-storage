@@ -34,7 +34,7 @@ class MountStatus:
                 listener()
             except Exception:
                 _LOGGER.exception(
-                    "Could not update an entity for backup mount %s", self.name
+                    "Could not update an entity for network mount %s", self.name
                 )
 
     def _set_error(self, message: str) -> None:
@@ -58,7 +58,7 @@ class MountStatus:
             self.state = mount.state.value if mount and mount.state else "missing"
             self.last_error = None
         except Exception:
-            _LOGGER.exception("Could not refresh backup mount %s", self.name)
+            _LOGGER.exception("Could not refresh network mount %s", self.name)
             self._set_error("Could not contact the Supervisor to check this storage location.")
             return
 
@@ -70,7 +70,7 @@ class MountStatus:
         try:
             await get_supervisor_client(self.hass).mounts.reload_mount(self.name)
         except Exception as err:
-            _LOGGER.exception("Could not reconnect backup mount %s", self.name)
+            _LOGGER.exception("Could not reconnect network mount %s", self.name)
             self._set_error("The storage location could not be reconnected.")
             raise HomeAssistantError(
                 "The storage location could not be reconnected. "
