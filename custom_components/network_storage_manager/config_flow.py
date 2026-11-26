@@ -1,4 +1,4 @@
-"""Guided creation of Supervisor-managed network backup mounts."""
+"""Guided creation of Supervisor-managed network storage mounts."""
 from __future__ import annotations
 
 from pathlib import PurePath
@@ -32,8 +32,15 @@ def _identity_schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
     return vol.Schema(
         {
             vol.Required(
-                CONF_MOUNT_NAME, default=defaults.get(CONF_MOUNT_NAME, "nas_backup")
+                CONF_MOUNT_NAME, default=defaults.get(CONF_MOUNT_NAME, "nas_storage")
             ): selector.TextSelector(),
+            vol.Required(
+                CONF_USAGE, default=defaults.get(CONF_USAGE, USAGE_BACKUP)
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=STORAGE_USAGES, translation_key="storage_usage"
+                )
+            ),
             vol.Required(
                 CONF_PROTOCOL, default=defaults.get(CONF_PROTOCOL, PROTOCOL_CIFS)
             ): selector.SelectSelector(
@@ -46,10 +53,19 @@ def _identity_schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
     )
 
 
+def _default_backup_field(fields, defaults):
+    """Only backup mounts can be selected as the default backup destination."""
+    if defaults.get(CONF_USAGE, USAGE_BACKUP) == USAGE_BACKUP:
+        fields[vol.Required(
+            CONF_MAKE_DEFAULT, default=defaults.get(CONF_MAKE_DEFAULT, False)
+        )] = selector.BooleanSelector()
+    return vol.Schema(fields)
+
+
 def _smb_schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
-    """Return only the fields required for SMB/CIFS."""
+    """Return the SMB fields appropriate to the selected storage usage."""
     defaults = defaults or {}
-    return vol.Schema(
+    return _default_backup_field(
         {
             vol.Required(CONF_SERVER, default=defaults.get(CONF_SERVER, "")): selector.TextSelector(),
             vol.Required(CONF_SHARE, default=defaults.get(CONF_SHARE, "")): selector.TextSelector(),
@@ -57,24 +73,20 @@ def _smb_schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
             vol.Required(CONF_PASSWORD): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
             ),
-            vol.Required(
-                CONF_MAKE_DEFAULT, default=defaults.get(CONF_MAKE_DEFAULT, False)
-            ): selector.BooleanSelector(),
-        }
+        },
+        defaults,
     )
 
 
 def _nfs_schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
-    """Return only the fields required for NFS."""
+    """Return the NFS fields appropriate to the selected storage usage."""
     defaults = defaults or {}
-    return vol.Schema(
+    return _default_backup_field(
         {
             vol.Required(CONF_SERVER, default=defaults.get(CONF_SERVER, "")): selector.TextSelector(),
             vol.Required(CONF_PATH, default=defaults.get(CONF_PATH, "")): selector.TextSelector(),
-            vol.Required(
-                CONF_MAKE_DEFAULT, default=defaults.get(CONF_MAKE_DEFAULT, False)
-            ): selector.BooleanSelector(),
-        }
+        },
+        defaults,
     )
 
 
@@ -93,7 +105,7 @@ def _error_key_for_exception(err: Exception) -> str:
 
 
 class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Configure one Supervisor-managed network backup location."""
+    """Configure one Supervisor-managed network storage location."""
 
     VERSION = 1
 
@@ -142,7 +154,7 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def _async_create_mount(self, user_input, step_id, schema_factory):
-        """Validate, create, activate and save one Supervisor backup mount."""
+        """Validate, create, activate and save one Supervisor mount."""
         created_mount = False
         data: dict[str, Any] | None = None
         try:
@@ -159,7 +171,7 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             if data[CONF_PROTOCOL] == PROTOCOL_CIFS:
                 request = CIFSMountRequest(
-                    usage=MountUsage.BACKUP,
+                    usage=MountUsage(data[CONF_USAGE]),
                     server=data[CONF_SERVER],
                     share=data[CONF_SHARE],
                     username=data[CONF_USERNAME],
@@ -167,7 +179,7 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
             else:
                 request = NFSMountRequest(
-                    usage=MountUsage.BACKUP,
+                    usage=MountUsage(data[CONF_USAGE]),
                     server=data[CONF_SERVER],
                     path=PurePath(data[CONF_PATH]),
                 )
@@ -183,7 +195,7 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await client.mounts.delete_mount(data[CONF_MOUNT_NAME])
                 raise ValueError("mount_not_active")
 
-            if data[CONF_MAKE_DEFAULT]:
+            if data[CONF_USAGE] == USAGE_BACKUP and data[CONF_MAKE_DEFAULT]:
                 await client.mounts.options(
                     MountsOptions(default_backup_mount=data[CONF_MOUNT_NAME])
                 )
@@ -210,6 +222,7 @@ class NasBackupStorageConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         entry_data = {
             CONF_MOUNT_NAME: data[CONF_MOUNT_NAME],
             CONF_PROTOCOL: data[CONF_PROTOCOL],
+            CONF_USAGE: data[CONF_USAGE],
             CONF_SERVER: data[CONF_SERVER],
             CONF_MAKE_DEFAULT: data[CONF_MAKE_DEFAULT],
         }

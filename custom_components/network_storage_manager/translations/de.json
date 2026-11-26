@@ -3,16 +3,18 @@
     "step": {
       "user": {
         "title": "Netzwerkspeicher hinzufügen",
-        "description": "Zuerst einen eindeutigen internen Namen und das Speicherprotokoll wählen. Für SMB/CIFS kann optional ein im Windows Explorer kopierter Pfad wie \\\\truenas\\backups\\home-assistant eingefügt werden. Im nächsten Schritt erscheinen nur die für das gewählte Protokoll nötigen Angaben.",
+        "description": "Zuerst Namen, Verwendungszweck und Speicherprotokoll wählen. Backups werden als Sicherungsziel eingebunden, Medien unter /media und freigegebene Ordner unter /share. Für SMB/CIFS kann optional ein Windows-Explorer-Pfad eingefügt werden.",
         "data": {
           "mount_name": "Name in Home Assistant",
           "protocol": "Protokoll",
-          "windows_path": "Aus Windows Explorer kopierter SMB-Pfad (optional)"
+          "windows_path": "Aus Windows Explorer kopierter SMB-Pfad (optional)",
+          "usage": "Verwendungszweck"
         },
         "data_description": {
           "mount_name": "Interne Kennung für diesen Speicherort. Nur Buchstaben, Zahlen und Unterstriche verwenden; Beispiel: truenas_backups.",
           "protocol": "SMB/CIFS für Windows- oder TrueNAS-Freigaben wählen, NFS für einen NFS-Export.",
-          "windows_path": "Optionale SMB-Abkürzung. Einen aus Windows Explorer kopierten Pfad einfügen, zum Beispiel: \\\\truenas\\backups\\home-assistant. NAS-Adresse und Remote-Freigabepfad werden im nächsten Schritt übernommen."
+          "windows_path": "Optionale SMB-Abkürzung. Einen aus Windows Explorer kopierten Pfad einfügen, zum Beispiel: \\\\truenas\\backups\\home-assistant. NAS-Adresse und Remote-Freigabepfad werden im nächsten Schritt übernommen.",
+          "usage": "Backups als Sicherungsziel, Medien für den Medienbrowser oder freigegebener Ordner (Share) für gemeinsam genutzte Dateien."
         }
       },
       "smb": {
@@ -68,7 +70,8 @@
       "permission_denied": "Das Konto hat keine ausreichenden Rechte für diesen Speicherort.",
       "path_not_found": "Der gewählte Netzwerkpfad ist nicht vorhanden.",
       "mount_failed": "Der Speicherort konnte nicht eingebunden werden. Server, Pfad und Zugriffsrechte prüfen.",
-      "cannot_connect": "Home Assistant konnte Supervisor oder NAS nicht erreichen."
+      "cannot_connect": "Home Assistant konnte Supervisor oder NAS nicht erreichen.",
+      "invalid_usage": "Backups, Medien oder freigegebener Ordner auswählen."
     },
     "abort": {
       "supervisor_required": "Network Storage Manager benötigt Home Assistant OS oder eine Supervised-Installation."
@@ -77,7 +80,7 @@
   "entity": {
     "sensor": {
       "backup_storage_status": {
-        "name": "Backup-Speicherstatus"
+        "name": "Speicherstatus"
       },
       "storage_protocol": {
         "name": "Speicherprotokoll"
@@ -90,11 +93,28 @@
       },
       "default_backup_location": {
         "name": "Standard-Backup-Speicherort"
+      },
+      "storage_usage": {
+        "name": "Verwendungszweck",
+        "state": {
+          "backup": "Backups",
+          "media": "Medien",
+          "share": "Freigegebener Ordner (Share)"
+        }
       }
     },
     "button": {
       "reconnect_backup_storage": {
-        "name": "Backup-Speicher neu verbinden"
+        "name": "Netzwerkspeicher neu verbinden"
+      }
+    }
+  },
+  "selector": {
+    "storage_usage": {
+      "options": {
+        "backup": "Backups",
+        "media": "Medien",
+        "share": "Freigegebener Ordner (Share)"
       }
     }
   }

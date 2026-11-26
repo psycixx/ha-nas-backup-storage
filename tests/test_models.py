@@ -27,6 +27,34 @@ from network_storage_manager.models import (
 
 
 class MountInputTests(unittest.TestCase):
+    def test_usage_choices_and_legacy_backup_default(self):
+        base = {CONF_MOUNT_NAME: "nas", CONF_PROTOCOL: PROTOCOL_NFS,
+                CONF_SERVER: "nas.local", CONF_PATH: "/mnt/storage"}
+        legacy = validate_mount_input(base)
+        self.assertEqual(legacy[CONF_USAGE], USAGE_BACKUP)
+        self.assertFalse(legacy[CONF_MAKE_DEFAULT])
+        for usage in STORAGE_USAGES:
+            with self.subTest(usage=usage):
+                result = validate_mount_input(base | {
+                    CONF_USAGE: usage, CONF_MAKE_DEFAULT: True
+                })
+                self.assertEqual(result[CONF_USAGE], usage)
+                self.assertEqual(result[CONF_MAKE_DEFAULT], usage == USAGE_BACKUP)
+
+    def test_unsupported_usage_is_rejected(self):
+        for usage in ("other", "", None, 123):
+            with self.subTest(usage=usage), self.assertRaisesRegex(ValueError, "invalid_usage"):
+                validate_mount_identity({CONF_MOUNT_NAME: "nas",
+                                         CONF_PROTOCOL: PROTOCOL_CIFS, CONF_USAGE: usage})
+
+    def test_unc_path_preserves_storage_usage(self):
+        result = prepare_mount_input({CONF_MOUNT_NAME: "nas_media",
+                                      CONF_PROTOCOL: PROTOCOL_CIFS,
+                                      CONF_USAGE: USAGE_MEDIA,
+                                      CONF_WINDOWS_PATH: r"\\nas\media\music"})
+        self.assertEqual(result[CONF_USAGE], USAGE_MEDIA)
+        self.assertEqual(result[CONF_SHARE], "media/music")
+
     def test_cifs_input(self):
         result = validate_mount_input(
             {

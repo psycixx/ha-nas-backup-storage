@@ -1,4 +1,4 @@
-"""Reconnect button for a Supervisor backup mount."""
+"""Reconnect button for a Supervisor mount."""
 from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
@@ -15,7 +15,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class ReconnectButton(ButtonEntity):
-    """Request an immediate Supervisor reload of the backup mount."""
+    """Request an immediate Supervisor reload of the network mount."""
 
     _attr_has_entity_name = True
     _attr_translation_key = "reconnect_backup_storage"
@@ -28,5 +28,5 @@ class ReconnectButton(ButtonEntity):
         self._attr_unique_id = f"{entry.entry_id}_reconnect"
 
     async def async_press(self) -> None:
-        """Reconnect the backup mount."""
+        """Reconnect the network mount."""
         await self._status.async_reload()

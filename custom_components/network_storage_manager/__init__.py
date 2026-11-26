@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up one integration-managed Supervisor backup mount."""
+    """Set up one integration-managed Supervisor mount."""
     status = MountStatus(hass, entry.data[CONF_MOUNT_NAME])
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {"status": status}
     try:
@@ -39,13 +39,13 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Remove the native backup location when its integration entry is deleted."""
+    """Remove the native storage location when its integration entry is deleted."""
     mount_name = entry.data[CONF_MOUNT_NAME]
     try:
         await get_supervisor_client(hass).mounts.delete_mount(mount_name)
     except Exception:
         _LOGGER.warning(
-            "Could not remove Supervisor backup mount %s while removing the "
+            "Could not remove Supervisor mount %s while removing the "
             "Network Storage Manager entry. Remove it manually under "
             "Settings > System > Storage if it still exists.",
             mount_name,
